@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Layout, Menu, Spin } from "antd";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { MessageSquare, Wand2, Home } from "lucide-react";
-import { createStyles } from "antd-style";
-import { useEffect, useState } from "react";
+import { Layout, Menu, Spin } from 'antd';
+import { createStyles } from 'antd-style';
+import { Home, MessageSquare, Wand2 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const { Header } = Layout;
 
@@ -72,17 +72,17 @@ export function AppHeader() {
 
   const items = [
     {
-      key: "/",
+      key: '/',
       icon: <Home size={16} />,
       label: <Link href="/">Home</Link>,
     },
+    // {
+    //   key: "/chat",
+    //   icon: <MessageSquare size={16} />,
+    //   label: <Link href="/chat">Chat</Link>,
+    // },
     {
-      key: "/chat",
-      icon: <MessageSquare size={16} />,
-      label: <Link href="/chat">Chat</Link>,
-    },
-    {
-      key: "/generate",
+      key: '/generate',
       icon: <Wand2 size={16} />,
       label: <Link href="/generate">Generate</Link>,
     },
@@ -100,7 +100,7 @@ export function AppHeader() {
 
   return (
     <Header
-      className={`${styles.headerWrapper} ${!loading ? "loaded" : ""} ${
+      className={`${styles.headerWrapper} ${!loading ? 'loaded' : ''} ${
         styles.header
       }`}
     >

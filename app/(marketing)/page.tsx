@@ -1,11 +1,11 @@
 // app/(marketing)/page.tsx
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button, Space, Spin } from "antd";
-import Link from "next/link";
-import { RocketIcon, MessageSquare, Wand2 } from "lucide-react";
-import { createStyles } from "antd-style";
+import { Button, Space, Spin } from 'antd';
+import { createStyles } from 'antd-style';
+import { MessageSquare, RocketIcon, Wand2 } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const useStyles = createStyles(({ token, css }) => ({
   pageWrapper: css`
@@ -108,7 +108,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className={`${styles.pageWrapper} ${!loading ? "loaded" : ""}`}>
+    <div className={`${styles.pageWrapper} ${!loading ? 'loaded' : ''}`}>
       <div className={styles.container}>
         <section className={styles.hero}>
           <h1>AI Content Assistant</h1>
@@ -116,7 +116,7 @@ export default function HomePage() {
             Generate, refine, and optimize your content with the power of AI
           </p>
           <Space size="large">
-            <Link href="/chat" passHref>
+            {/* <Link href="/chat" passHref>
               <Button
                 type="primary"
                 className={styles.actionButton}
@@ -124,9 +124,10 @@ export default function HomePage() {
               >
                 Start Chatting
               </Button>
-            </Link>
+            </Link> */}
             <Link href="/generate" passHref>
               <Button
+                type="primary"
                 className={`${styles.actionButton} ${styles.secondaryButton}`}
                 icon={<Wand2 size={16} />}
               >

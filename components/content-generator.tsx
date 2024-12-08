@@ -1,12 +1,13 @@
 // components/content-generator.tsx
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Card, Select, Space, Form, message, Spin, Modal } from "antd";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { createStyles } from "antd-style";
-import { Wand2, RefreshCw } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, Form, message, Modal, Select, Space, Spin } from 'antd';
+import { createStyles } from 'antd-style';
+import { RefreshCw, Wand2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { TrendingTopics } from './trending-topics';
 
 // API response types
 interface PromptResponse {
@@ -41,7 +42,7 @@ interface FormValues {
 }
 
 // Output type
-type OutputType = "text" | "meme" | "video" | "image";
+type OutputType = 'text' | 'meme' | 'video' | 'image';
 
 // Generated content type
 type GeneratedContent = string | null;
@@ -55,31 +56,31 @@ interface Option {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const toneOptions: Option[] = [
-  { value: "professional", label: "Professional" },
-  { value: "casual", label: "Casual" },
-  { value: "humorous", label: "Humorous" },
-  { value: "formal", label: "Formal" },
+  { value: 'professional', label: 'Professional' },
+  { value: 'casual', label: 'Casual' },
+  { value: 'humorous', label: 'Humorous' },
+  { value: 'formal', label: 'Formal' },
 ];
 
 const typeOptions: Option[] = [
-  { value: "blog", label: "Blog Post" },
-  { value: "social", label: "Social Media" },
-  { value: "email", label: "Email" },
-  { value: "article", label: "Article" },
+  { value: 'blog', label: 'Blog Post' },
+  { value: 'social', label: 'Social Media' },
+  { value: 'email', label: 'Email' },
+  { value: 'article', label: 'Article' },
 ];
 
 const platformOptions: Option[] = [
-  { value: "twitter", label: "Twitter" },
-  { value: "linkedin", label: "LinkedIn" },
-  { value: "facebook", label: "Facebook" },
-  { value: "instagram", label: "Instagram" },
+  { value: 'twitter', label: 'Twitter' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'instagram', label: 'Instagram' },
 ];
 
 const outputTypeOptions: Option[] = [
-  { value: "text", label: "Text" },
-  { value: "meme", label: "Meme" },
-  { value: "video", label: "Video" },
-  { value: "image", label: "Image" },
+  { value: 'text', label: 'Text' },
+  { value: 'meme', label: 'Meme' },
+  { value: 'video', label: 'Video' },
+  { value: 'image', label: 'Image' },
 ];
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -164,28 +165,24 @@ export default function ContentGenerator() {
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [generatedContent, setGeneratedContent] =
     useState<GeneratedContent>(null);
-  const [sourceLink, setSourceLink] = useState<string>("");
-  const [outputType, setOutputType] = useState<OutputType>("text");
+  const [sourceLink, setSourceLink] = useState<string>('');
+  const [outputType, setOutputType] = useState<OutputType>('text');
   const [isRefineModalOpen, setIsRefineModalOpen] = useState<boolean>(false);
-  const [refineInput, setRefineInput] = useState<string>("");
+  const [refineInput, setRefineInput] = useState<string>('');
   const [refining, setRefining] = useState<boolean>(false);
-  const [lastPrompt, setLastPrompt] = useState<string>("");
+  const [lastPrompt, setLastPrompt] = useState<string>('');
   const [trendingTopics, setTrendingTopics] = useState<Option[]>([]);
   const [loadingTopics, setLoadingTopics] = useState<boolean>(true);
 
   useEffect(() => {
     const initializeComponent = async () => {
       try {
-        // Load saved input
-        const savedInput = sessionStorage.getItem("contentGeneratorInput");
-        if (savedInput) {
-          form.setFieldsValue({ input: savedInput });
-        }
+        form.resetFields();
+        sessionStorage.removeItem('contentGeneratorInput');
 
-        // Fetch trending topics
         const response = await fetch(`${API_BASE_URL}/trending`);
         if (!response.ok) {
-          throw new Error("Failed to fetch trending topics");
+          throw new Error('Failed to fetch trending topics');
         }
         const data: TrendingResponse = await response.json();
         setTrendingTopics(
@@ -195,27 +192,38 @@ export default function ContentGenerator() {
           }))
         );
       } catch (error) {
-        console.error("Failed to initialize:", error);
-        message.error("Failed to load trending topics");
+        console.error('Failed to initialize:', error);
+        message.error('Failed to load trending topics');
       } finally {
         setLoadingTopics(false);
-        // Small delay to prevent FOUC
         setTimeout(() => setInitialLoading(false), 300);
       }
     };
 
     initializeComponent();
+
+    return () => {
+      sessionStorage.removeItem('contentGeneratorInput');
+    };
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    sessionStorage.setItem("contentGeneratorInput", e.target.value);
+    sessionStorage.setItem('contentGeneratorInput', e.target.value);
+    form.setFieldsValue({ input: e.target.value });
+  };
+
+  const handleTopicClick = (topic: string) => {
+    const currentInput = form.getFieldValue('input');
+    const newInput = currentInput ? `${currentInput} #${topic}` : `#${topic}`;
+    form.setFieldsValue({ input: newInput });
+    sessionStorage.setItem('contentGeneratorInput', newInput);
   };
 
   const getPrompt = async (values: FormValues): Promise<PromptResponse> => {
     try {
       const response = await fetch(`${API_BASE_URL}/get_prompt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
 
@@ -225,7 +233,7 @@ export default function ContentGenerator() {
 
       return await response.json();
     } catch (error) {
-      message.error("Failed to get prompt");
+      message.error('Failed to get prompt');
       throw error;
     }
   };
@@ -236,8 +244,8 @@ export default function ContentGenerator() {
   ): Promise<TextResponse | MediaResponse> => {
     try {
       const response = await fetch(`${API_BASE_URL}/generate_${type}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
       });
 
@@ -254,15 +262,15 @@ export default function ContentGenerator() {
 
   const handleRefine = async () => {
     if (!lastPrompt) {
-      message.error("No content to refine");
+      message.error('No content to refine');
       return;
     }
 
     setRefining(true);
     try {
       const refineResponse = await fetch(`${API_BASE_URL}/refine`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: lastPrompt,
           refine: refineInput,
@@ -270,13 +278,13 @@ export default function ContentGenerator() {
       });
 
       if (!refineResponse.ok) {
-        throw new Error("Failed to refine prompt");
+        throw new Error('Failed to refine prompt');
       }
 
       const refinedPrompt: RefineResponse = await refineResponse.json();
       const result = await generateContent(refinedPrompt.prompt, outputType);
 
-      if (outputType === "text") {
+      if (outputType === 'text') {
         setGeneratedContent((result as TextResponse).text);
       } else {
         setGeneratedContent((result as MediaResponse).url);
@@ -284,11 +292,11 @@ export default function ContentGenerator() {
 
       setLastPrompt(refinedPrompt.prompt);
       setIsRefineModalOpen(false);
-      setRefineInput("");
-      message.success("Content refined successfully!");
+      setRefineInput('');
+      message.success('Content refined successfully!');
     } catch (error) {
-      console.error("Refinement failed:", error);
-      message.error("Failed to refine content");
+      console.error('Refinement failed:', error);
+      message.error('Failed to refine content');
     } finally {
       setRefining(false);
     }
@@ -303,16 +311,16 @@ export default function ContentGenerator() {
 
       const result = await generateContent(promptResult.prompt, outputType);
 
-      if (outputType === "text") {
+      if (outputType === 'text') {
         setGeneratedContent((result as TextResponse).text);
       } else {
         setGeneratedContent((result as MediaResponse).url);
       }
 
-      message.success("Content generated successfully!");
+      message.success('Content generated successfully!');
     } catch (error) {
-      console.error("Generation failed:", error);
-      message.error("Failed to generate content");
+      console.error('Generation failed:', error);
+      message.error('Failed to generate content');
     } finally {
       setLoading(false);
     }
@@ -332,7 +340,7 @@ export default function ContentGenerator() {
   }
 
   return (
-    <div className={`${styles.container} ${!initialLoading ? "loaded" : ""}`}>
+    <div className={`${styles.container} ${!initialLoading ? 'loaded' : ''}`}>
       <Card className="w-full max-w-4xl mx-auto mt-8">
         <Form<FormValues>
           form={form}
@@ -345,7 +353,7 @@ export default function ContentGenerator() {
             name="input"
             label="What would you like to generate?"
             rules={[
-              { required: true, message: "Please enter your content prompt" },
+              { required: true, message: 'Please enter your content prompt' },
             ]}
           >
             <Textarea
@@ -354,6 +362,11 @@ export default function ContentGenerator() {
               className="min-h-[100px]"
             />
           </Form.Item>
+
+          <TrendingTopics
+            topics={trendingTopics.map((t) => t.label)}
+            onTopicClick={handleTopicClick}
+          />
 
           <div className={styles.formGrid}>
             <Form.Item
@@ -394,16 +407,6 @@ export default function ContentGenerator() {
                 className="w-full"
               />
             </Form.Item>
-
-            <Form.Item name="trending" label="Trending Topics" className="m-0">
-              <Select<string>
-                loading={loadingTopics}
-                options={trendingTopics}
-                placeholder="Select trending topic"
-                className="w-full"
-                allowClear
-              />
-            </Form.Item>
           </div>
 
           <Form.Item
@@ -421,7 +424,7 @@ export default function ContentGenerator() {
           <Form.Item>
             <Button type="submit" disabled={loading} className="w-full">
               <Wand2 className="mr-2 h-4 w-4" />
-              {loading ? "Generating..." : "Generate Content"}
+              {loading ? 'Generating...' : 'Generate Content'}
             </Button>
           </Form.Item>
         </Form>
@@ -442,13 +445,13 @@ export default function ContentGenerator() {
               </Button>
             </div>
 
-            {outputType === "text" ? (
+            {outputType === 'text' ? (
               <div className="p-4 bg-muted rounded-lg">
                 <p className="whitespace-pre-wrap">{generatedContent}</p>
               </div>
             ) : (
               <div className={styles.mediaPreview}>
-                {outputType === "video" ? (
+                {outputType === 'video' ? (
                   <video
                     src={generatedContent}
                     controls
@@ -488,7 +491,7 @@ export default function ContentGenerator() {
         open={isRefineModalOpen}
         onCancel={() => {
           setIsRefineModalOpen(false);
-          setRefineInput("");
+          setRefineInput('');
         }}
         footer={[
           <Button
@@ -496,7 +499,7 @@ export default function ContentGenerator() {
             variant="outline"
             onClick={() => {
               setIsRefineModalOpen(false);
-              setRefineInput("");
+              setRefineInput('');
             }}
           >
             Cancel
@@ -506,7 +509,7 @@ export default function ContentGenerator() {
             onClick={handleRefine}
             disabled={!refineInput.trim() || refining}
           >
-            {refining ? "Refining..." : "Refine"}
+            {refining ? 'Refining...' : 'Refine'}
           </Button>,
         ]}
       >
